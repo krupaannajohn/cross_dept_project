@@ -26,21 +26,6 @@ def requisition_list(request):
 from collections import Counter
 import json
 from django.http import JsonResponse
-
-"""def get_funnel_data(request, requisition_no):
-    stages = ['Reached Out', 'Consideration','Interview', 'Offers','Hire']
-    requisition = get_object_or_404(Requisition, requisition_no=requisition_no)
-    candidates = Candidate.objects.filter(requisition__requisition_no=requisition_no)
-
-    stage_counts = {stage: 0 for stage in stages}
-    for candidate in candidates:
-        if candidate.status in stage_counts:
-            stage_counts[candidate.status] += 1
-
-    funnel_data = [{"label": stage, "y": count} for stage, count in stage_counts.items()]
-    return JsonResponse({"funnel_data": funnel_data})
-"""
-
 def get_funnel_data(request, requisition_no):
     STAGE_ORDER = ['Reached Out', 'Consideration', 'Interview', 'Offers', 'Hire']
     stage_index = {stage: i for i, stage in enumerate(STAGE_ORDER)}
@@ -108,15 +93,6 @@ def search_candidates(request):
 
 
 # Add Requisition
-"""def add_requisition(request):
-    if request.method == "POST":
-        form = RequisitionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("requisitions")
-    else:
-        form = RequisitionForm()
-    return render(request, "add_requisition.html", {"form": form})"""
 def add_requisition(request):
     if request.method == "POST":
         form = RequisitionForm(request.POST)
@@ -144,141 +120,6 @@ def add_requisition(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Candidate, Requisition
 from django.urls import reverse
-
-"""def add_candidates(request):
-    requisitions = Requisition.objects.all()  # Get all requisitions
-
-    if request.method == "POST":
-        print("POST request received.")
-        print("Form data:", request.POST)
-        input_type = request.POST.get("input_type")
-        print("input_type =", input_type)
-        input_type = request.POST.get("input_type")
-        requisition_no = request.POST.get("requisition_no")
-
-        try:
-            requisition = Requisition.objects.get(requisition_no=requisition_no)
-        except Requisition.DoesNotExist:
-            return render(request, "add_candidates.html", {
-                "requisitions": requisitions,
-                "error": "Requisition not found!",
-            })
-
-        if input_type == "form":
-            Candidate.objects.create(
-                requisition=requisition,  
-                name=request.POST.get("name"),
-                experience=request.POST.get("experience"),
-                phone_no=request.POST.get("phone_no"),
-                company=request.POST.get("company"),
-                current_ctc=request.POST.get("current_ctc"),
-                expected_ctc=request.POST.get("expected_ctc"),
-                designation=request.POST.get("designation"),
-                source=request.POST.get("source"),
-                status=request.POST.get("status"),
-                remarks=request.POST.get("remarks"),
-            )
-            return redirect("dashboard")
-        
-        elif input_type == "bulk":
-            raw_data = request.POST.get("pasted_data", "").strip()
-            
-            if raw_data:
-                lines = [line.strip() for line in raw_data.split("\n") if line.strip()]
-                candidates = []
-
-                # Assume the first row contains column headers (optional)
-                headers = ["name", "experience", "company", "current_ctc", "designation", 
-           "remarks", "phone_no", "expected_ctc", "source"]
-                
-                for line in lines:
-                    values = raw_data.splitlines()  
-                    
-                    if len(values) >= len(headers):  # Ensure all fields exist
-                        candidate_data = dict(zip(headers, values[:len(headers)]))  # Map headers to values
-                        
-                        candidates.append(Candidate(
-                            requisition=requisition,  # Link to correct requisition
-                            **candidate_data  # Unpacking dictionary
-                        ))
-
-                if candidates:
-                    Candidate.objects.bulk_create(candidates)  # Bulk insert candidates
-
-            return redirect("dashboard")
-    return render(request, "add_candidates.html", {"requisitions": requisitions})"""
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Candidate, Requisition
-
-"""def add_candidates(request):
-    requisitions = Requisition.objects.all()
-
-    if request.method == "POST":
-        input_type = request.POST.get("input_type")
-        requisition_no = request.POST.get("requisition_no")
-
-        try:
-            requisition = Requisition.objects.get(requisition_no=requisition_no)
-        except Requisition.DoesNotExist:
-            return render(request, "add_candidates.html", {
-                "requisitions": requisitions,
-                "error": "Requisition not found!",
-            })
-
-        if input_type == "form":
-            Candidate.objects.create(
-                requisition=requisition,
-                name=request.POST.get("name"),
-                experience=request.POST.get("experience"),
-                phone_no=request.POST.get("phone_no"),
-                company=request.POST.get("company"),
-                current_ctc=request.POST.get("current_ctc"),
-                expected_ctc=request.POST.get("expected_ctc"),
-                designation=request.POST.get("designation"),
-                source=request.POST.get("source"),
-                status=request.POST.get("status"),
-                remarks=request.POST.get("remarks"),
-            )
-            return redirect(f"/requisition/{requisition.requisition_no}/")
-
-
-        elif input_type == "bulk":
-            raw_data = request.POST.get("pasted_data", "").strip()
-            print("Received pasted_data:", raw_data)
-            print("Requisition no:", requisition.requisition_no)
-
-            lines = [line.strip() for line in raw_data.splitlines() if line.strip()]
-            print("Split lines:", lines)
-            raw_data = request.POST.get("pasted_data", "").strip()
-
-            if raw_data:
-                lines = [line.strip() for line in raw_data.split("\n") if line.strip()]
-                candidates = []
-
-                i = 0
-                while i + 5 < len(lines):  # Make sure at least 6 lines for each candidate
-                    candidate = Candidate(
-                        requisition=requisition,
-                        name=lines[i],
-                        experience=lines[i + 1],
-                        company=lines[i + 2],
-                        current_ctc=lines[i + 3],
-                        designation=lines[i + 4],
-                        remarks=lines[i + 5],
-                        phone_no="",           # Fill empty or default values for now
-                        expected_ctc="",
-                        source="Bulk Upload"
-                    )
-                    candidates.append(candidate)
-                    i += 6  # Move to next candidate block
-
-                if candidates:
-                    Candidate.objects.bulk_create(candidates)
-                    return redirect(f"/requisition/{requisition.requisition_no}/")
-
-    return render(request, "add_candidates.html", {"requisitions": requisitions})
-"""
 def add_candidates(request):
     requisitions = Requisition.objects.all()
 
@@ -388,27 +229,6 @@ def edit_candidate(request, pk):
     })
 
 # General Funnel Data
-from django.http import JsonResponse
-from .models import Candidate 
-
-"""def get_general_funnel_data(request):
-    stages = [
-        "Reached Out",
-        "Consideration",
-        "Interview",
-        "Offers",
-        "Hire"
-    ]
-
-    funnel_data = []
-    for stage in stages:
-        count = Candidate.objects.filter(status=stage).count()
-        funnel_data.append({
-            "label": stage,
-            "y": count
-        })
-
-    return JsonResponse({"funnel_data": funnel_data})"""
 def get_general_funnel_data(request):
     STAGE_ORDER = [
         "Reached Out",
@@ -526,44 +346,6 @@ def hr_metrics_view(request):
 
     return render(request, "hr_metrics.html", context)
 
-from django.db.models import Q
-from django.http import JsonResponse
-from .models import Requisition, Candidate
-
-"""def get_hr_metrics_per_requisition(request):
-    requisitions = Requisition.objects.all()
-    metrics_list = []
-
-    for req in requisitions:
-        candidates = Candidate.objects.filter(requisition__requisition_no=req)
-
-        reached_out = candidates.count()
-        consideration = candidates.filter(
-            Q(status='Consideration') | 
-            Q(status='Interview') |
-            Q(status='Offers') | 
-            Q(status='Hire')
-        ).count()
-        interviews = candidates.filter(
-            Q(status='Interview') |
-            Q(status='Offers') | 
-            Q(status='Hire')
-        ).count()
-        offers = candidates.filter(Q(status='Offers') | Q(status='Hire')).count()
-        hires = candidates.filter(status='Hire').count()
-
-        metrics_list.append({
-            "requisition": req.job_title,
-            "indent": req.requisition_no,
-            "dept": req.department,
-            "offers": offers,
-            "reached_out": reached_out,
-            "shortlisted": interviews,
-            "hires": hires
-        })
-
-    return JsonResponse({"metrics": metrics_list})
-"""
 from django.http import JsonResponse
 from django.db.models import Q
 from .models import Requisition, Candidate
@@ -592,43 +374,6 @@ def get_hr_metrics_per_requisition(request):
 
 # Recruiter View
 from .models import Recruiter
-"""
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
-from .models import Recruiter, Requisition
-
-def recruiter_view(request):
-    recruiters = Recruiter.objects.all()
-    selected_recruiter = None
-    requisitions = []
-
-    if request.method == "POST":
-        recruiter_id = request.POST.get("recruiter")
-        selected_recruiter = None
-
-        if recruiter_id:
-            try:
-                selected_recruiter = Recruiter.objects.get(id=recruiter_id)
-                # Start by loading all requisitions assigned to this recruiter
-                requisitions = Requisition.objects.filter(recruiters=selected_recruiter)
-            except Recruiter.DoesNotExist:
-                pass
-
-        # If the search button is clicked, filter the list
-        if selected_recruiter and "search_btn" in request.POST:
-            search_query = request.POST.get("search_query", "").strip()
-            if search_query:
-                requisitions = requisitions.filter(
-                    Q(requisition_no__icontains=search_query) |
-                    Q(job_title__icontains=search_query)
-                )
-
-    return render(request, "recruiter_view.html", {
-        "recruiters": recruiters,
-        "selected_recruiter": selected_recruiter,
-        "requisitions": requisitions
-    })
-"""
 from django.db.models import Count
 
 def recruiter_view(request):
