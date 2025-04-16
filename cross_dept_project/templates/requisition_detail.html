@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisition Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 style="color: white;">Requisition Details</h2>
+    <p style="color: white;"><strong>Requisition No:</strong> {{ requisition.requisition_no }}</p>
+    <p style="color: white;"><strong>Job Title:</strong> {{ requisition.job_title }}</p>
+    <p style="color: white;"><strong>Department:</strong> {{ requisition.department }}</p>
+    <p style="color: white;"><strong>Vacancies:</strong> {{ requisition.vacancies }}</p>
+    <p style="color: white;"><strong>Recruiter:</strong> {% for recruiter in requisition.recruiters.all %}
+        {{ recruiter.name }}{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        None assigned.
+    {% endfor %}</p>
+
+    <h3 style="color: white;">Candidates</h3>
+    {% if candidates %}
+    <table border="1" class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Designation</th>
+                <th>Company</th>
+                <th>Experience</th>
+                <th>Current CTC</th>
+                <th>Expected CTC</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for candidate in candidates %}
+            <tr>
+                <td>{{ candidate.name }}</td>
+                <td>{{ candidate.designation }}</td>
+                <td>{{ candidate.company }}</td>
+                <td>{{ candidate.experience }}</td>
+                <td>{{ candidate.current_ctc }}</td>
+                <td>{{ candidate.expected_ctc }}</td>
+                <td>{{ candidate.source }}</td>
+                <td>{{ candidate.get_status_display }}</td>
+                <td>{{ candidate.remarks }}</td>                                              
+                <td><a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-sm btn-warning">Edit</a></td>
+                <td> <form action="{% url 'delete_candidate' candidate.id %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this candidate?');">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: rgb(255, 0, 0);">No candidates available for this requisition.</p>
+    {% endif %}
+
+    <a href="{% url 'add_candidates' %}" class="btn btn-success">Add Candidate</a>
+    
+
+
+    <h3 style="color: white;">Candidate Source Distribution & Recruitment Funnel</h3>
+    <button onclick="exportAsImagePDF()" class="btn-gold">Export Dashboard as PDF</button>
+    <div class="charts"  style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+        <!-- Pie Chart -->
+        <div style="width: 45%;">
+            <canvas id="sourceChart" style="color: white;"></canvas>
+        </div>
+
+        <!-- Funnel Chart -->
+        <div id="funnelChartContainer" style="width: 60%; height: 400px; margin: auto;"></div>
+    </div>
+
+<!--Export button function-->
+<script>
+    async function exportAsImagePDF() {
+        const container = document.querySelector('.charts');
+
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            useCORS: true
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('landscape', 'pt', 'a4');
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const x = (pdfWidth - imgWidth * ratio) / 2;
+        const y = (pdfHeight - imgHeight * ratio) / 2;
+
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth * ratio, imgHeight * ratio);
+        pdf.save(`dashboard_{{ requisition.requisition_no|escapejs }}.pdf`);
+    }
+</script>
+
+    <script>
+        // Pie Chart (Source Distribution)
+        var sourceData = JSON.parse('{{ source_counts|escapejs }}');
+        var sourceLabels = Object.keys(sourceData);
+        var sourceValues = Object.values(sourceData);
+
+        var ctx1 = document.getElementById("sourceChart").getContext("2d");
+        new Chart(ctx1, {
+            type: "pie",
+            data: {
+                labels: sourceLabels,
+                datasets: [{
+                    data: sourceValues,
+                    backgroundColor: ['#FDDC5C','gold', '#B8860B',  '#DA9100', '#996515']
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'black'
+                        }
+                    },
+                    tooltip: {
+                        bodyColor: 'white', 
+                        titleColor: 'white'
+                    }
+                }
+            }
+
+        });
+
+        //  Load Data for Funnel Chart (Recruitment Stages)
+        async function updateFunnelChart() {
+            try {
+                const response = await fetch(`/get-funnel-data/{{ requisition.requisition_no }}/`);
+                const data = await response.json();
+
+                console.log("Fetched Funnel Data:", data); // Debugging Log
+
+                if (!data.funnel_data || data.funnel_data.length === 0) {
+                    console.warn("No data available for the funnel chart.");
+                    document.getElementById("funnelChartContainer").innerHTML = "<p style='color: black;'>No Data Available</p>";
+                    return;
+                }
+
+                // Clear previous chart
+                document.getElementById("funnelChartContainer").innerHTML = "";
+
+                var chart = new CanvasJS.Chart("funnelChartContainer", {
+                    animationEnabled: true,
+                    theme: "dark2",
+                    backgroundColor: "",
+                    title: {
+                        text: "",
+                        fontColor: "",
+                        fontSize: 24
+                    },
+                    data: [{
+                        type: "funnel",
+                        indexLabelPlacement: "inside",
+                        indexLabelFontColor: "black",
+                        toolTipContent: "<b>{label}</b>: {y}",
+                        indexLabel: "{label} ({y})",
+                        dataPoints: data.funnel_data.map((point, index) => ({
+                            ...point,
+                            color: ["gold", "orange", "red", "blue", "green"][index % 5]  // Assign dynamic colors
+                        }))
+                    }]
+                });
+
+                setTimeout(() => {
+                    console.log("Rendering Funnel Chart...");
+                    chart.render();
+                }, 500); // Small delay to ensure rendering
+
+            } catch (error) {
+                console.error("Error updating funnel chart:", error);
+            }
+        }
+
+        // Load chart on page load & auto-update every 30s
+        window.onload = () => {
+            updateFunnelChart();
+            setInterval(updateFunnelChart, 30000);
+        };
+    </script>
+    {% endblock %}
+
+</body>
+</html>
+

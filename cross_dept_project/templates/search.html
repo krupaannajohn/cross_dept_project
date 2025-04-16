@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <style>
+        .custom-input {
+            color: white;
+            background-color: black;
+        }
+    
+        .custom-input::placeholder {
+            color: white;
+            opacity: 0.7; /* optional, makes it look slightly faded */
+        }
+    </style>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 style="color: white;">Search Requisitions</h2>
+    <form method="GET">
+        <input type="text" name="q" class="form-control custom-input" placeholder="Enter requisition number" value="{{ query }}">
+        <button type="submit" class="btn btn-success">Search</button>
+    </form>
+
+    
+    {% endblock %}
+
+    
+</body>
+</html>

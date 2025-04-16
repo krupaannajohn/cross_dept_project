@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Candidates</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        form label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #000;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .form-control::placeholder {
+            color: white;
+            opacity: 0.7;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: gold;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: black;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Edit Candidate</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <label>Name:</label>
+        <input type="text" name="name" class="form-control" value="{{ candidate.name }}">
+
+        <label>Experience:</label>
+        <input type="text" name="experience" class="form-control" value="{{ candidate.experience }}">
+
+        <label>Phone No:</label>
+        <input type="text" name="phone_no" class="form-control" value="{{ candidate.phone_no }}">
+
+        <label>Company:</label>
+        <input type="text" name="company" class="form-control" value="{{ candidate.company }}">
+
+        <label>Current CTC:</label>
+        <input type="text" name="current_ctc" class="form-control" value="{{ candidate.current_ctc }}">
+
+        <label>Expected CTC:</label>
+        <input type="text" name="expected_ctc" class="form-control" value="{{ candidate.expected_ctc }}">
+
+        <label>Designation:</label>
+        <input type="text" name="designation" class="form-control" value="{{ candidate.designation }}">
+
+        <label>Source:</label>
+        <select name="source" class="form-control">
+            {% for choice, label in candidate.SOURCE_CHOICES %}
+                <option value="{{ choice }}" {% if candidate.source == choice %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Status:</label>
+        <select name="status" class="form-control">
+            {% for choice, label in candidate.STATUS_CHOICES %}
+                <option value="{{ choice }}" {% if candidate.status == choice %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Remarks:</label>
+        <textarea name="remarks" class="form-control">{{ candidate.remarks }}</textarea>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+</body>
+</html>

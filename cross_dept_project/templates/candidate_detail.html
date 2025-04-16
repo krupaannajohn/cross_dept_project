@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Details</title>
+</head>
+<body>
+{% extends 'base.html' %}
+{% block content %}
+
+<h2 style="color: white;">Candidate Details for Requisition No: {{ requisition_no }}</h2>
+
+{% if candidates %}
+    {% for candidate in candidates %}
+        <div style="margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; background-color: #222; color: white;">
+            <p><strong>Name:</strong> {{ candidate.name }}</p>
+            <p><strong>Designation:</strong> {{ candidate.designation }}</p>
+            <p><strong>Company:</strong> {{ candidate.company }}</p>
+            <p><strong>Experience:</strong> {{ candidate.experience }}</p>
+            <p><strong>Current CTC:</strong> {{ candidate.current_ctc }}</p>
+            <p><strong>Expected CTC:</strong> {{ candidate.expected_ctc }}</p>
+            <p><strong>Source:</strong> {{ candidate.source }}</p>
+            <p><strong>Status:</strong> {{ candidate.status }}</p>
+            <p><strong>Remarks:</strong> {{ candidate.remarks }}</p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p style="color: white;">No candidates found for this requisition.</p>
+{% endif %}
+
+{% endblock %}
+</body>
+</html>

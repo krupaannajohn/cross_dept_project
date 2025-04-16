@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Requisition</title>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <h1>Bulk Add Candidates</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Requisition No:</label>
+        <input type="text" name="requisition_no" required>
+        <br>
+        <label>Paste Data:</label>
+        <textarea name="pasted_data" rows="10" cols="50"></textarea>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    {% endblock %}
+
+    
+    
+</body>
+</html>

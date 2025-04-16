@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>General Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            background-color: #121212;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: gold;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 60px auto;
+            padding: 30px;
+            background-color: #2f2f2f;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .charts {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .chart-box {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1 1 45%;
+            min-width: 300px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        .btn-gold {
+            background-color: gold;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-gold:hover {
+            background-color: black;
+            color: gold;
+        }
+
+    </style>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <div class="container">
+        <h1 style="color: white;">General Dashboard</h1>
+        <p style="color: white;">Total Candidates: {{ total_candidates }}</p>
+
+        <div class="charts">
+            <!-- Pie Chart Box -->
+            <div class="chart-box">
+                <h3 style="color: white;">Candidate Source Distribution</h3>
+                <canvas id="sourceChart"></canvas>
+            </div>
+
+            <!-- Funnel Chart Box -->
+            <div class="chart-box">
+                <h3 style="color: white;">Recruitment Funnel</h3>
+                <div id="funnelChartContainer" style="height: 350px;"></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <a href="{% url 'add_requisition' %}" class="btn-gold">Add Requisition</a>
+            <a href="{% url 'add_candidates' %}" class="btn-gold">Add Candidate</a>
+        </div>
+        <!--<button onclick="window.print()">Print Report</button>-->
+        <button onclick="exportAsImagePDF()" class="btn-gold">Export Dashboard as PDF</button>
+
+        <script>
+            async function exportAsImagePDF() {
+                const container = document.querySelector('.charts');
+
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('landscape', 'pt', 'a4');
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                const x = (pdfWidth - imgWidth * ratio) / 2;
+                const y = (pdfHeight - imgHeight * ratio) / 2;
+
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth * ratio, imgHeight * ratio);
+                pdf.save("dashboard_general.pdf");
+            }
+        </script>
+
+
+            </div>
+
+    <script>
+        // --- Pie Chart (Source Distribution) ---
+        let sourceData = {};
+
+        try {
+            const rawSourceData = '{{ source_counts|default:"{}"|escapejs }}';
+            if (rawSourceData.trim() !== "") {
+                sourceData = JSON.parse(rawSourceData);
+            }
+        } catch (err) {
+            console.error("Error parsing source_counts:", err);
+        }
+
+        const sourceLabels = Object.keys(sourceData);
+        const sourceValues = Object.values(sourceData);
+
+        const ctx1 = document.getElementById("sourceChart").getContext("2d");
+
+        new Chart(ctx1, {
+            type: "pie",
+            data: {
+                labels: sourceLabels,
+                datasets: [{
+                    data: sourceValues,
+                    backgroundColor: ['#FDDC5C','gold', '#B8860B',  '#DA9100', '#996515']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: "white"
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // --- Funnel Chart (Recruitment Stages Aggregated) ---
+        async function updateFunnelChart() {
+            try {
+                const response = await fetch(`/get-general-funnel-data/`);
+                const data = await response.json();
+
+                if (!data.funnel_data || data.funnel_data.length === 0) {
+                    document.getElementById("funnelChartContainer").innerHTML = "<p style='color: white;'>No Data Available</p>";
+                    return;
+                }
+
+                const chart = new CanvasJS.Chart("funnelChartContainer", {
+                    animationEnabled: true,
+                    theme: "dark2",
+                    backgroundColor: "#1e1e1e",
+                    data: [{
+                        type: "funnel",
+                        indexLabelPlacement: "inside",
+                        indexLabelFontColor: "white",
+                        toolTipContent: "<b>{label}</b>: {y}",
+                        indexLabel: "{label} ({y})",
+                        dataPoints: data.funnel_data.map((point, index) => ({
+                            ...point,
+                            color: ["gold", "orange", "red", "blue", "green"][index % 5]
+                        }))
+                    }]
+                });
+
+                chart.render();
+            } catch (error) {
+                console.error("Error fetching funnel chart data:", error);
+            }
+        }
+
+        window.onload = updateFunnelChart;
+
+
+</script>
+
+    </script>
+    {% endblock %}
+</body>
+</html>

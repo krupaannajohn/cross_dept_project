@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Requisition</title>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 style="color: white;">Edit Requisition: {{ requisition_no }}</h2>
+
+    <form method="post" style="color: white;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{% url 'requisitions' %}" class="btn btn-success">Cancel</a>
+        </div>
+    </form>
+    {% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .form-control::placeholder {
+            color: white !important;
+            opacity: 1; /* Ensures it's fully visible */
+        }
+
+    </style>
+    
+</head>
+<body>
+
+    {% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 style="color: white;">Add Candidates</h2>
+
+    <!-- Input Type Toggle -->
+    <div style="margin-bottom: 1rem;">
+        <label style="color: white;">
+            <input type="radio" name="input_type_toggle" value="form" checked onclick="toggleInput('form')"> Form Entry
+        </label>
+        <label class="ms-3" style="color: white;">
+            <input type="radio" name="input_type_toggle" value="bulk" onclick="toggleInput('bulk')"> Bulk Paste
+        </label>
+    </div>
+
+    <!-- Unified Form -->
+    <form method="post" action="{% url 'add_candidates' %}">
+        {% csrf_token %}
+        <input type="hidden" name="input_type" id="input_type" value="form">
+
+        <input list="requisition_list" name="requisition_no" class="form-control mb-2" style="background-color: black; color: white;" placeholder="Enter Requisition Number or Job Title" required>
+            <datalist id="requisition_list">
+                {% for req in requisitions %}
+                    <option value="{{ req.requisition_no }}">{{ req.requisition_no }} : {{ req.job_title }} - {{req.department}}</option>
+                {% endfor %}
+            </datalist>
+
+
+        <!-- Form Entry -->
+        <div id="form_fields">
+            <input type="text" name="name" placeholder="Name" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="experience" placeholder="Experience" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="phone_no" placeholder="Phone No" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="company" placeholder="Company" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="current_ctc" placeholder="Current CTC" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="expected_ctc" placeholder="Expected CTC" class="form-control mb-2" style="background-color: black; color: white;">
+            <input type="text" name="designation" placeholder="Designation" class="form-control mb-2" style="background-color: black; color: white;">
+            <select name="source" class="form-control mb-2" style="background-color: black; color: white;">
+                <option value="" disabled selected>Source</option>
+                <option value="Naukri">Naukri</option>
+                <option value="Linkedin">Linkedin</option>
+                <option value="Indeed">Indeed</option>
+                <option value="Employee Referrals">Employee Referrals</option>
+            </select>
+            <select name="status" class="form-control mb-2" style="background-color: black; color: white;">
+                    <option value="" disabled selected>Status</option>
+                    <option value="Reached Out">Reached Out</option>
+                    <option value="Consideration">Consideration</option>
+                    <option value="Interview">Interview</option>
+                    <option value="Offers">Offers</option>
+                    <option value="Hire">Hire</option>
+            </select>
+            <textarea name="remarks" rows="5" placeholder="Remarks" class="form-control mb-2" style="background-color: black; color: white; resize: vertical;"></textarea>
+
+        </div>
+
+        <!-- Bulk Paste Entry -->
+        <div id="bulk_fields" style="display: none;">
+            <textarea name="pasted_data" rows="6" class="form-control mb-3" placeholder="Paste data here..." style="background-color: black; color: white;"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success" style="background-color: gold; color: black;">Submit</button>
+    </form>
+</div>
+
+<script>
+    function toggleInput(type) {
+        document.getElementById("input_type").value = type;
+        document.getElementById("form_fields").style.display = type === "form" ? "block" : "none";
+        document.getElementById("bulk_fields").style.display = type === "bulk" ? "block" : "none";
+    }
+</script>
+
+{% endblock %}
+    
+
+</body>
+</html>

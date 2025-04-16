@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Requisitions</title>
+    <style>
+        .white-placeholder::placeholder {
+        color: white !important; 
+    }
+    </style>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <h2 style="color: white;">Requisitions</h2>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+        <input id="requisitionInput"
+               list="requisition_list"
+               name="requisition_no"
+               class="form-control white-placeholder"
+               style="background-color: black; color: white; flex: 1;"
+               placeholder="Enter Requisition Number"
+               required>
+        
+        <button onclick="redirectToRequisition()" class="btn btn-success">Search</button>
+    </div>
+    
+    <datalist id="requisition_list">
+        {% for req in requisitions %}
+            <option value="{{ req.requisition_no }}">{{ req.requisition_no }} : {{ req.job_title }} - {{ req.department }}</option>
+        {% endfor %}
+    </datalist>
+    
+    <script>
+        function redirectToRequisition() {
+            const input = document.getElementById("requisitionInput").value.trim();
+            if (input !== "") {
+                window.location.href = "/requisition/" + encodeURIComponent(input) + "/";
+            }
+        }
+    </script>    
+    
+    <ul>
+        {% for req in requisitions %}
+            <li style="color: white;"><a href="{% url 'view_requisition' req.requisition_no %}" style="color: white;">{{ req.requisition_no }}</a> - {{req.job_title}} - {{ req.department }} ({{ req.vacancies }} vacancies)</li>
+        {% endfor %}
+    </ul>
+    <br></br>
+    <a href="{% url 'add_requisition' %}" class="btn btn-success">Add New Requisition</a>
+    <h3 style="color: white; margin-top: 2rem;">Edit Requisition</h3>
+    <form method="get" action="{% url 'edit_requisition_redirect' %}">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+            <input type="text" name="requisition_no" class="form-control white-placeholder"
+                style="background-color: black; color: white; flex: 1;"
+                placeholder="Enter Requisition Number to Edit" required>
+            <button type="submit" class="btn btn-success">Edit</button>
+        </div>
+    </form>
+    {% endblock %}
+
+</body>
+</html>
