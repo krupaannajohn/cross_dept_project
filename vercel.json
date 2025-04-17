@@ -1,24 +1,13 @@
 {
-    "builds": [
-      {
+    "builds": [{
         "src": "cross_dept_project/wsgi.py",
         "use": "@vercel/python",
-        "config": {
-          "maxLambdaSize": "15mb",
-          "runtime": "python3.11"
-        }
-      }
-    ],
+        "config": { "maxLambdaSize": "15mb", "runtime": "python3.11" }
+    }],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "cross_dept_project/wsgi.py"
-      }
-    ],
-    "functions": {
-      "api/**": {
-        "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
-      }
-    }
-  }
-  
+        {
+            "src": "/(.*)",
+            "dest": "cross_dept_project/wsgi.py"
+        }
+    ]
+}
