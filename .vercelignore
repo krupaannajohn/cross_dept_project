@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.cache/
+*.log
+venv/
+.env
+node_modules/
+.next/
+public/
+app/
+*.zip
