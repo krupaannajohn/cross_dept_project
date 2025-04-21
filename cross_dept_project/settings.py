@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'cross_dept_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-import dj_database_url
+
 from decouple import config
 import dj_database_url
 
