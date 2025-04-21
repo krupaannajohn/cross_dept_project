@@ -79,9 +79,24 @@ import dj_database_url
 from decouple import config
 import dj_database_url
 
-DATABASES = {
+"""DATABASES = {
     'default': dj_database_url.parse(config('DATABASE_URL'))
 }
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'vguard1234!',
+        'HOST': 'db.bwicolsmxdnypdmdnzbm.supabase.co',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',  # <<< this is critical
+        }
+    }
+}
+
 
 """
 DATABASES = {
