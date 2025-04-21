@@ -83,19 +83,22 @@ WSGI_APPLICATION = 'cross_dept_project.wsgi.application'
     'default': dj_database_url.parse(config('DATABASE_URL'))
 }
 """
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'vguard1234!',
-        'HOST': 'db.bwicolsmxdnypdmdnzbm.supabase.co',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
         'OPTIONS': {
-            'sslmode': 'require',  # <<< this is critical
+            'sslmode': 'require',
         }
     }
 }
+
 
 
 """
