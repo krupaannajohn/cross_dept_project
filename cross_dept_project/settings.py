@@ -76,14 +76,15 @@ WSGI_APPLICATION = 'cross_dept_project.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-#from decouple import config
-#import dj_database_url
+import dj_database_url
+from decouple import config
 
-"""DATABASES = {
+DATABASES = {
     'default': dj_database_url.parse(config('DATABASE_URL'))
 }
-"""
-import os
+
+
+"""import os
 
 DATABASES = {
     'default': {
@@ -99,7 +100,7 @@ DATABASES = {
     }
 }
 
-
+"""
 
 """
 DATABASES = {
